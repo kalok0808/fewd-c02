@@ -1,123 +1,154 @@
-const prompt = require('prompt-sync')({sigint: true});
+const prompt = require("prompt-sync")({sigint: true});
+const clear = require('clear-screen');
+const hat = "^";
+const hole = "O";
+const fieldCharacter = "░";
+const pathCharacter = "*";
 
-const hat = '^';
-const hole = 'O';
-const fieldCharacter = '░';
-const pathCharacter = '*';
 
-//define class
 class Field {
-    constructor(hatAndHoles, field) {
-      this._field  = field;
-      this._hatAndHoles = hatAndHoles;
-    }
-    //play game method
-    playGame() {
-      let y = 0; 
-      let x = 0;
-      this.print(this._field);
-     
-      while (this._hatAndHoles[y][x] === pathCharacter || this._hatAndHoles[y][x] === fieldCharacter) {
-        const direction = prompt('Which direction would you like to move? Please ennter N for North, S for  South, E for East, or W for West. \n');
-      
-      if (direction.toUpperCase() === 'N') {
-        if (y === 0) {
-          console.log('You cannot move any further North. Please choose another direction')
-        } else {
-          y -=1
-        }
-      } else if (direction.toUpperCase() === 'S') {
-          if (y >= this._field.length) {
-            console.log('You cannot move any further South. Please choose another direction')
-          } else {
-            y +=1
-          }
-        } else if (direction.toUpperCase() === 'W') {
-          if (x === 0) {
-            console.log('You cannot move any further West. Please choose another direction')
-          } else {
-            x -= 1
-          }
-        } else if (direction.toUpperCase() === 'E') {
-          if (x >= this._field[y].length) {
-            console.log('You cannot move any further East. Please choose another direction')
-          } else {
-            x += 1
-          }
-        } else {
-          console.log('Invalid entry. Please enter N, S, E, or W')
-        } 
-        if (this._hatAndHoles[y][x] === hat) {
-          console.log('You found the hat! You win!')
-        } else if (this._hatAndHoles[y][x] === hole) {
-          console.log('You fell in a hole. Game Over')
-        } else {
-          this._field[y][x] = pathCharacter;
-          this.print(this._field);
-        }
-      } 
-    }
-    //print field method
-    print() {
-      for (let row of this._field){
-        console.log(row.join(' '));
-      }
-    }
-    
-    //generate field with hat and holes
-    static generateField(height, width, holes) {
-      let newField = [];
-      for (let i = 0; i < height; i++) {
-        newField.push([]);
-        for (let j = 0; j < height; j++) {
-            newField[i].push(fieldCharacter)
-        };
+  constructor(field = [
+      []
+  ]) {
+      this.field = field;
+      this.start = {
+          x: 0,
+          y: 0
       };
-      newField[0][0] = pathCharacter;
-      let hatX = Math.floor(Math.random() * width);
-      let hatY = Math.floor(Math.random() * height);
-      newField[hatY][hatX] = hat;
-      
-      for (let k = holes; k > 0; k--) {
-        let holeX = hatX;
-        let holeY = hatY;
-        while (holeX === hatX) {
-          holeX = Math.floor(Math.random() * width)
-        };
-        while (holeY === hatY) {
-          holeY = Math.floor(Math.random() * height)
-        };
-       newField[holeY][holeX] = hole; 
-      }
-      return newField;
-    } 
-    
-    //generate blank field for the user to traverse without seeing the hat and holes
-    static generateBlankField(height, width){
-      let newField = [];
-      for (let i = 0; i < height; i++) {
-        newField.push([]);
-        for (let j = 0; j < height; j++) {
-            newField[i].push(fieldCharacter)
-        };
+      this.hatPos = {
+          x: 0,
+          y: 0
       };
-      newField[0][0] = pathCharacter;
-      return newField;
-    }
+      this.locationX = 0;
+      this.locationY = 0;
   }
-  
-  
-  let myField 
-  
-  //create the blank field for the user to see
-  const blankField = Field.generateBlankField(5, 5)
-  
-  //created the field with the hat and holes
-  const newField = Field.generateField(5, 5, 1);
-  console.log(blankField);
-  
-  //instantiate a Field object using newField = hatAndHoles and field = blankField  
-  myField = new Field (newField, blankField);
-  
-  //call playGame method
-  myField.playGame();
+  // Provide a random position on the field
+  // outside of a defined ‘off-limit’ position
+  setPos(offLimit = { x: 0, y: 0 }) {
+      const pos = {
+          x: 0,
+          y: 0
+      }
+      do {
+          pos.x = Math.floor(Math.random() * this.field[0].length);
+          pos.y = Math.floor(Math.random() * this.field.length);
+      } while (pos.x === offLimit.x && pos.y === offLimit.y);
+      return pos;
+  }
+  // Define a random starting position
+  setStart() {
+      this.start = this.setPos();
+      this.locationX = this.start.x;
+      this.locationY = this.start.y;
+      this.field[this.start.y][this.start.x] = pathCharacter;
+  }
+  // question 1 for burce?
+  // setReturn() {
+  //     this.field[this.start.y][this.start.x] = fieldCharacter;
+  // }
+  // Set the hat location
+  setHat() {
+      this.hatPos = this.setPos(this.start)
+      this.field[this.hatPos.y][this.hatPos.x] = hat;
+  }
+  runGame() {
+      // Set the starting position
+      this.setStart();
+      // Set the hat location
+      this.setHat();
+      let playing = true;
+      while (playing) {
+          this.print();
+          this.getInput();
+          if (!this.isInBounds()) {
+              console.log("Out of bounds instruction.");
+              playing = false;
+              break;
+          } else if (this.isHole()) {
+              console.log("Sorry, you fell down a hole.");
+              playing = false;
+              break;
+          } else if (this.isHat()) {
+              console.log("Congrats, you found your hat!");
+              playing = false;
+              break;
+          }
+          // question 1 for bruce
+          console.log(this.field[this.locationY][this.locationX]);
+          if (this.field[this.locationY][this.locationX] == pathCharacter) {
+              //setReturn();
+              this.field[this.locationY][this.locationX] = fieldCharacter;
+          }
+          // Update current location on map
+          this.field[this.locationY][this.locationX] = pathCharacter;
+      }
+  }
+  print() {
+      clear();
+      this.field.forEach(element => console.log(element.join('')));
+  }
+  getInput() {
+      const input = prompt("Which way?").toUpperCase();
+      switch (input) {
+          case "W":
+              this.locationY -= 1;
+              break;
+          case "S":
+              this.locationY += 1;
+              break;
+          case "A":
+              this.locationX -= 1;
+              break;
+          case "D":
+              this.locationX += 1;
+              break;
+          default:
+              console.log("Enter W, D, A or D.");
+              this.getInput();
+              break;
+      }
+  }
+  isInBounds() {
+      return (
+          this.locationY >= 0 &&
+          this.locationX >= 0 &&
+          this.locationY < this.field.length &&
+          this.locationX < this.field[0].length
+      );
+  }
+  isHat() {
+      return this.field[this.locationY][this.locationX] === hat;
+  }
+  isHole() {
+      return this.field[this.locationY][this.locationX] === hole;
+  }
+  ispathCharacter() {
+      return this.field[this.locationY][this.locationaX] == pathCharacter;
+  }
+  addHoles() {
+      // Set the number of holes to add between 1 and 3
+      const numHoles = Math.floor(Math.random() * 3) + 1;
+      for (let i = 1; i <= numHoles; i++) {
+          let holePos = {
+              x: 0,
+              y: 0
+          };
+          do {
+              holePos = this.setPos(this.hatPos);
+          } while (holePos.x === this.locationX && holePos.y === this.locationY);
+          this.field[holePos.y][holePos.x] = hole;
+      }
+  }
+  static generateField(fieldH, fieldW, percentage = 0.1) {
+      const field = new Array(fieldH).fill(0).map(element => new Array(fieldW));
+      for (let y = 0; y < fieldH; y++) {
+          for (let x = 0; x < fieldW; x++) {
+              const prob = Math.random();
+              field[y][x] = prob > percentage ? fieldCharacter : hole
+          }
+      }
+      return field;
+  }
+}
+const myField = new Field(Field.generateField(10, 10, 0.3), true);
+myField.runGame();
