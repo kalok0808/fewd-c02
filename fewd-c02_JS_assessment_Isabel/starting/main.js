@@ -42,10 +42,6 @@ class Field {
       this.locationY = this.start.y;
       this.field[this.start.y][this.start.x] = pathCharacter;
   }
-  // question 1 for burce?
-  // setReturn() {
-  //     this.field[this.start.y][this.start.x] = fieldCharacter;
-  // }
   // Set the hat location
   setHat() {
       this.hatPos = this.setPos(this.start)
@@ -72,12 +68,6 @@ class Field {
               console.log("Congrats, you found your hat!");
               playing = false;
               break;
-          }
-          // question 1 for bruce
-          console.log(this.field[this.locationY][this.locationX]);
-          if (this.field[this.locationY][this.locationX] == pathCharacter) {
-              //setReturn();
-              this.field[this.locationY][this.locationX] = fieldCharacter;
           }
           // Update current location on map
           this.field[this.locationY][this.locationX] = pathCharacter;
@@ -150,5 +140,5 @@ class Field {
       return field;
   }
 }
-const myField = new Field(Field.generateField(10, 10, 0.3), true);
+const myField = new Field(Field.generateField(10, 10, 0.5), true);
 myField.runGame();
