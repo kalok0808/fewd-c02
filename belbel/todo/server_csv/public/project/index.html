@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <p>No completed</p>
+    <div class="itemList completed"></div>
+    <p>Completed</p>
+    <div class="itemList nocompleted"></div>
+    <div class="addButton">
+        <button class="btn" type="button">+</i></button>
+    </div>
+    
+    <form id='itemForm' class="noshow">
+        <div class="">
+            <label for="title">
+                <p>Title</p>
+                <input type="text" id='title' name="title">
+            </label>
+            <label for="assignedTo">
+                <p>AssignedTo</p>
+                <input type="text" id='assignedTo' name="assignedTo">
+            </label>
+            <label for="status">
+                <p>Is complete</p>
+                <input type="checkbox" id="status" name="status" value="yes">
+            </label>
+            <label for="details">
+                <p>Details</p>
+                <textarea id='details' name="details" id="" cols="30" rows="10"></textarea>
+            </label>
+            <label for="duedate">
+                <p>Duedate</p>
+            <input class="due-date" type="date" name="duedate" placeholder="Due date" />
+            <div class="option">
+            </label>
+                <button type="button" id='submit'>Submit</button>
+                <button type="button" id='x'>X</button>
+
+            </div>
+
+        </div>
+    </form>
+    <script src="./index.js"></script>
+</body>
+</html>
